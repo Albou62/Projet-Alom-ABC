@@ -32,13 +32,6 @@ public class MessageThread implements Runnable {
 				out = new PrintWriter(client.getOutputStream(), true);
 
 				String token = in.readLine();
-				System.out.println("Token reçu: " + token);
-				
-				if (token == null) {
-					System.out.println("Erreur: Token vide ou invalide");
-					this.finish();
-				}
-				
 				System.out.println("Le client: " + client.getRemoteSocketAddress() + " a envoyé le token: " + token);
 				
 				nickname = tokenToNickname.get(token);
@@ -60,7 +53,7 @@ public class MessageThread implements Runnable {
 				}
 
 			}
-			
+
 			catch(IOException e) {
 				System.out.println("Une exception est survenue: " + e.getMessage());
 				this.finish();
