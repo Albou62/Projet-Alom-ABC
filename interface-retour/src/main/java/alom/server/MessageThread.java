@@ -13,16 +13,18 @@ public class MessageThread implements Runnable {
 	
 	private Socket client;
 	private Map<String, String> tokenToNickname;
+	private Map<String, Socket> connexions;
 	private boolean running = true;
 	BufferedReader in = null;
 	PrintWriter out = null;
 	String nickname = null;
-	Map<String, Socket> connexions = new HashMap<>();
 	
 	
-	public MessageThread(Socket client, Map<String, String> tokenToNickname) {
+	
+	public MessageThread(Socket client, Map<String, String> tokenToNickname, Map<String, Socket> connexions) {
 		this.client = client;
 		this.tokenToNickname = tokenToNickname;
+		this.connexions = connexions;
 	}
 
 	@Override
@@ -39,23 +41,28 @@ public class MessageThread implements Runnable {
 				nickname = tokenToNickname.get(token);
 
 				while (nickname == null) {
+					System.out.println("Client: " +  client.getRemoteSocketAddress());
 					System.out.println("Token invalide: " + token);
 					out.println("Erreur: Token invalide");
 					token = in.readLine();
 					nickname = tokenToNickname.get(token);
 				}
 
-				connexions.put(nickname,client);
+				this.connexions.put(nickname,client);
+				System.out.println("Connexions: " + this.connexions);
 				System.out.println("Bienvenue " + nickname + " !");
 				out.println("Bienvenue " + nickname + " !");
 
-				
 				String message;
+				
 
 				while ((message = in.readLine()) != null) {					
 					System.out.println(nickname + " a envoyé le message: " + message);			
 				}
-
+				
+				if(!client.isConnected()){
+					this.finish();
+				}
 			}
 
 			catch(IOException e) {
@@ -64,6 +71,7 @@ public class MessageThread implements Runnable {
 			} 
 			
 		}	
+		System.out.println("Fermeture de la connexion pour " + nickname);
 	}
 
 	public void finish() {

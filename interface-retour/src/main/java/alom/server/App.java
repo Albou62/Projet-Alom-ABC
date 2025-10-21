@@ -15,6 +15,7 @@ public class App
 	private static boolean running = true;
 	
 	private static Map<String, String> tokenToNickname = new HashMap<>();
+	private static Map<String, Socket> connexions = new HashMap<>();
 	
     public static void main( String[] args )
     {
@@ -31,8 +32,10 @@ public class App
         	    Socket client = messages.poll();
 				//System.out.println("Nouveau client à traiter : " + client);
         	    if (client != null) {
-        	        Thread thread = new Thread(new MessageThread(client, tokenToNickname));
+        	        Thread thread = new Thread(new MessageThread(client, tokenToNickname, connexions));
         	        thread.start();
+					Thread thread2 = new Thread(new ResponseThread(connexions));
+        	    	thread2.start();
         	    }
 			}
         	System.out.println("Le serveur a été arrêté");	
