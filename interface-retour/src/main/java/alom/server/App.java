@@ -34,8 +34,6 @@ public class App
         	    if (client != null) {
         	        Thread thread = new Thread(new MessageThread(client, tokenToNickname, connexions));
         	        thread.start();
-					Thread thread2 = new Thread(new ResponseThread(connexions));
-        	    	thread2.start();
         	    }
 			}
         	System.out.println("Le serveur a été arrêté");	

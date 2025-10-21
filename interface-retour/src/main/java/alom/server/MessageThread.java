@@ -29,7 +29,7 @@ public class MessageThread implements Runnable {
 
 	@Override
 	public void run() {
-				
+
 			try {
 				in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 				out = new PrintWriter(client.getOutputStream(), true);
@@ -54,10 +54,28 @@ public class MessageThread implements Runnable {
 
 				String message;
 				
+				while(running) {
+					try {
+						System.out.println("On attend 10 secondes pour essayer d'envoyer un message à toto");
+						Thread.sleep(10000);
+						Socket totoSocket = connexions.get("toto");
+                
+						if (totoSocket != null && !totoSocket.isClosed()) {
+							PrintWriter out = new PrintWriter(totoSocket.getOutputStream(), true);
+							out.println("coucou");
+							System.out.println("Message 'coucou' envoyé à toto");
+						} 
+						else {
+							System.out.println("toto n'est pas connecté");
+						}
 
-				while ((message = in.readLine()) != null && running) {					
-					System.out.println(nickname + " a envoyé le message: " + message);			
-				}	
+					} 
+					catch (Exception e) {
+						e.printStackTrace();
+						System.out.println("Une exception est survenue lors de l'envoi du message.");
+						this.finish();
+					}
+			}	
 			}		
 
 			catch(IOException e) {
@@ -67,11 +85,13 @@ public class MessageThread implements Runnable {
 			
 		
 		System.out.println("Fermeture de la connexion pour " + nickname);
+		this.finish();
 	}
 
 	public void finish() {
 			this.running = false;
 			try {
+				connexions.remove(nickname);
 				out.close();
 				in.close();
 				client.close();
