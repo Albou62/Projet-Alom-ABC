@@ -29,8 +29,7 @@ public class MessageThread implements Runnable {
 
 	@Override
 	public void run() {
-		
-		while (running){
+				
 			try {
 				in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 				out = new PrintWriter(client.getOutputStream(), true);
@@ -40,7 +39,7 @@ public class MessageThread implements Runnable {
 				
 				nickname = tokenToNickname.get(token);
 
-				while (nickname == null) {
+				while (nickname == null && running) {
 					System.out.println("Client: " +  client.getRemoteSocketAddress());
 					System.out.println("Token invalide: " + token);
 					out.println("Erreur: Token invalide");
@@ -56,21 +55,17 @@ public class MessageThread implements Runnable {
 				String message;
 				
 
-				while ((message = in.readLine()) != null) {					
+				while ((message = in.readLine()) != null && running) {					
 					System.out.println(nickname + " a envoyé le message: " + message);			
-				}
-				
-				if(!client.isConnected()){
-					this.finish();
-				}
-			}
+				}	
+			}		
 
 			catch(IOException e) {
 				System.out.println("Une exception est survenue: " + e.getMessage());
 				this.finish();
 			} 
 			
-		}	
+		
 		System.out.println("Fermeture de la connexion pour " + nickname);
 	}
 
