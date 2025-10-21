@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -16,6 +17,7 @@ public class MessageThread implements Runnable {
 	BufferedReader in = null;
 	PrintWriter out = null;
 	String nickname = null;
+	Map<String, Socket> connexions = new HashMap<>();
 	
 	
 	public MessageThread(Socket client, Map<String, String> tokenToNickname) {
@@ -42,9 +44,11 @@ public class MessageThread implements Runnable {
 					token = in.readLine();
 					nickname = tokenToNickname.get(token);
 				}
-				
+
+				connexions.put(nickname,client);
 				System.out.println("Bienvenue " + nickname + " !");
 				out.println("Bienvenue " + nickname + " !");
+
 				
 				String message;
 
