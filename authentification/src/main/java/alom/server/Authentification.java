@@ -39,6 +39,7 @@ public class Authentification {
             String token = generateToken();
             coupleLoginToken.put(login,token);
             //TODO Envoie validation inscription
+            Retour.inscription(coupleLoginToken);
         }
     };
 
