@@ -5,13 +5,12 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 
-/**
- * Root resource (exposed at "myresource" path)
- */
+
 @Path("authentification")
 public class Authentification {
 
     private static Map<String, String> coupleLoginPassword = new HashMap<>();
+    private static Map<String,String> coupleLoginToken = new HashMap<>();
 
     @GET
     @Path("connexion")
@@ -32,7 +31,22 @@ public class Authentification {
             //TODO Renvoie erreur à aller
         }else{
             coupleLoginPassword.put(login,password);
+            const token = generateToken();
+
             //TODO Envoie validation insccription
         }
     };
+
+    private String generateToken(){
+        String characters = "abcdefghijklmnopqrstuvwxyz0123456789";
+        String result = "";
+        Random random = new Random();
+
+        for (int i = 0; i < 15; i++) {
+            int index = random.nextInt(characters.length());
+            result += characters[index];
+        }
+        return result;
+    }
+
 }

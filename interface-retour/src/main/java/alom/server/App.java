@@ -19,7 +19,6 @@ public class App
 	
     public static void main( String[] args )
     {
-    	initializeTokens();
     	
     	try {
         	ServerSocket ss = new ServerSocket(App.PORT);
@@ -45,12 +44,9 @@ public class App
     }
     
 
-    private static void initializeTokens() {
-    	tokenToNickname.put("abc123", "toto");
-    	tokenToNickname.put("def456", "titi");
-    	tokenToNickname.put("ghi789", "tata");
-    	tokenToNickname.put("jkl123", "tutu");
-    }
+    public void inscriptionToken(String token, String nickname){
+		tokenToNickname.put(token,nickname)
+	}
     
     public static void finish() {
         running = false;
