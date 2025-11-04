@@ -37,7 +37,7 @@ public class InterfaceAller {
 
     @POST
     @Path("inscription")
-    public void inscription(String nickname, String password){
+    public Response inscription(String nickname, String password){
         try {
             Client client = ClientBuilder.newClient();
             WebTarget target = client.target("http://localhost:8080/interface-aller/webapi/authentification/inscription")
