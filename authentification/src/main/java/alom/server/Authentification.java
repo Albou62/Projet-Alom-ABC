@@ -1,6 +1,11 @@
 package alom.server;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
@@ -31,9 +36,9 @@ public class Authentification {
             //TODO Renvoie erreur à aller
         }else{
             coupleLoginPassword.put(login,password);
-            const token = generateToken();
-
-            //TODO Envoie validation insccription
+            String token = generateToken();
+            coupleLoginToken.put(login,token);
+            //TODO Envoie validation inscription
         }
     };
 
@@ -44,7 +49,7 @@ public class Authentification {
 
         for (int i = 0; i < 15; i++) {
             int index = random.nextInt(characters.length());
-            result += characters[index];
+            result += characters.charAt(index);
         }
         return result;
     }
