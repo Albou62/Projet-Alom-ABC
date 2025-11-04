@@ -16,7 +16,13 @@ public class Authentification {
     @GET
     @Path("connexion")
     public void connexion(String login, String password) {
-
+        if (coupleLoginPassword.containsKey(login)){
+            //TODO Renvoie erreur à aller
+        }else if (coupleLoginPassword.get(login) == password) {
+            //TODO Connexion au token retour
+        }else{
+            //TODO Message erreur connexion
+        }
     };
 
     @POST
