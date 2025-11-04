@@ -38,8 +38,17 @@ public class InterfaceAller {
     @POST
     @Path("inscription")
     public void inscription(String nickname, String password){
-        //TODO Implémenter l'inscription
-    };
-
-
+        try {
+            Client client = ClientBuilder.newClient();
+            WebTarget target = client.target("http://localhost:8080/interface-aller/webapi/authentification/inscription")
+                .queryParam("nickname", nickname)
+                .queryParam("password", password);
+            
+            Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(""));
+            
+        } 
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
