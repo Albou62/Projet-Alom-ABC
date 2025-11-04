@@ -37,7 +37,7 @@ public class InterfaceAller {
 
     @POST
     @Path("inscription")
-    public Response inscription(String nickname, String password){
+    public Response inscription(@QueryParam("nickname") String nickname, @QueryParam("password") String password){
         try {
             Client client = ClientBuilder.newClient();
             WebTarget target = client.target("http://localhost:8080/interface-aller/webapi/authentification/inscription")
@@ -45,10 +45,19 @@ public class InterfaceAller {
                 .queryParam("password", password);
             
             Response response = target.request(MediaType.APPLICATION_JSON).post(Entity.json(""));
+            String result = response.readEntity(String.class);
+            return Response.status(response.getStatus())
+                .entity(result)
+                .type(MediaType.APPLICATION_JSON)
+                .build();
+                
             
         } 
         catch (Exception e) {
             e.printStackTrace();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                .build();
         }
     }
 }
