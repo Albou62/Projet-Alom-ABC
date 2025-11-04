@@ -45,7 +45,7 @@ public class App
     
 
     public void inscriptionToken(String token, String nickname){
-		tokenToNickname.put(token,nickname)
+		tokenToNickname.put(token,nickname);
 	}
     
     public static void finish() {
