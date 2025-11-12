@@ -1,37 +1,72 @@
 package alom.server;
 
-import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 
-@Path("router")
+@Path("routeur")
 public class InterfaceAller {
 
-	private static final String AUTHENTIFICATION_URL = "http://127.0.0.1:8080/authentification/webapi/hello";
+	private static final String AUTHENTIFICATION_SERVICE = "http://127.0.0.1:8080/authentification/webapi";
+	
+	@POST
+	@Path("connexion")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response connexion(String jsonData) {
+		try {
+			Client client = ClientBuilder.newClient();
+			Response response = client.target(AUTHENTIFICATION_SERVICE + "/connexion")
+									  .request(MediaType.APPLICATION_JSON)
+									  .post(Entity.json(jsonData));
+			
+			String result = response.readEntity(String.class);
+			int status = response.getStatus();
+			response.close();
+			client.close();
+			
+			return Response.status(status).entity(result).build();	
+		} 
+        
+        catch (Exception e) {
+			return Response.status(500)
+						  .entity("{\"erreur\": \"Service authentification indisponible\"}")
+						  .build();
+		}
+	}
 
-	@GET
-    @Produces(MediaType.TEXT_PLAIN)
-    public String forwardToServiceAuthentification() {
-        Client client = ClientBuilder.newClient();
-        WebTarget target = client.target(AUTHENTIFICATION_URL);
+	@POST
+	@Path("inscription")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response inscription(String jsonData) {
+		try {
+			Client client = ClientBuilder.newClient();
+			Response response = client.target(AUTHENTIFICATION_SERVICE + "/inscription")
+									  .request(MediaType.APPLICATION_JSON)
+									  .post(Entity.json(jsonData));
+			
+			String result = response.readEntity(String.class);
+			int status = response.getStatus();
+			response.close();
+			client.close();
+			
+			return Response.status(status).entity(result).build();
+		} 
 
-        Response response = target.request(MediaType.TEXT_PLAIN).get();
+        catch (Exception e) {
+			return Response.status(500)
+						  .entity("{\"erreur\": \"Service authentification indisponible\"}")
+						  .build();
+		}
+	}
 
-        if (response.getStatus() == 200) {
-            String result = response.readEntity(String.class);
-            response.close();
-            return "Reponse de l'autre microservice : " + result;
-        } 
-		else {
-            response.close();
-            return "Erreur lors de l'appel à authentification : " + response.getStatus();
-        }
-    }
 
 }
