@@ -19,9 +19,9 @@ public class Authentification {
      */
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    public String getIt() {
+    public String getIt(String token, String nickname) {
         App.inscriptionToken(token, nickname);
-        return "Got it!";
+        return "Accept connexion";
     }
 }
 

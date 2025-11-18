@@ -39,6 +39,8 @@ public class ConnexionThread implements Runnable {
 			}
 		}
 	}
+
+
 	
 	public void finish() {
 		this.running = false;
