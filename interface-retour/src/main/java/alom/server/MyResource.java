@@ -23,3 +23,5 @@ public class MyResource {
         return "Got it!";
     }
 }
+
+

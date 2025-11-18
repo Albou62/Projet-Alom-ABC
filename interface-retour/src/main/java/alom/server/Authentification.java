@@ -1,27 +1,28 @@
 package alom.server;
 
-import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-/**
- * Root resource (exposed at "authentification" path)
- */
 @Path("authentification")
 public class Authentification {
 
-    /**
-     * Method handling HTTP GET requests. The returned object will be sent
-     * to the client as "text/plain" media type.
-     *
-     * @return String that will be returned as a text/plain response.
-     */
-    @GET
+    @POST
+    @Path("connexion")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
-    public String getIt(String token, String nickname) {
+    public Response connexion(@FormParam("token") String token,
+                              @FormParam("nickname") String nickname) {
+        if (token == null || token.isEmpty() || nickname == null || nickname.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("token et nickname sont requis").build();
+        }
         App.inscriptionToken(token, nickname);
-        return "Accept connexion";
+        return Response.ok("Accept connexion").build();
     }
 }
 

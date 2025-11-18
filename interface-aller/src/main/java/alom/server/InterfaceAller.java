@@ -23,7 +23,7 @@ public class InterfaceAller {
 	public Response connexion(String jsonData) {
 		try {
 			Client client = ClientBuilder.newClient();
-			Response response = client.target(AUTHENTIFICATION_SERVICE + "/connexion")
+			Response response = client.target(AUTHENTIFICATION_SERVICE + "/authentification/connexion")
 									  .request(MediaType.APPLICATION_JSON)
 									  .post(Entity.json(jsonData));
 			
@@ -49,7 +49,7 @@ public class InterfaceAller {
 	public Response inscription(String jsonData) {
 		try {
 			Client client = ClientBuilder.newClient();
-			Response response = client.target(AUTHENTIFICATION_SERVICE + "/inscription")
+			Response response = client.target(AUTHENTIFICATION_SERVICE + "/authentification/inscription")
 									  .request(MediaType.APPLICATION_JSON)
 									  .post(Entity.json(jsonData));
 			
