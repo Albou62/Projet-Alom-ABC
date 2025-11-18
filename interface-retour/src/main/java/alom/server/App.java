@@ -2,24 +2,23 @@ package alom.server;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 public class App
 {
 	
-	public static final int PORT = 8080;
+	public static final int PORT = 9090;
 	private static ConcurrentLinkedQueue<Socket> messages = new ConcurrentLinkedQueue<>();
 	private static boolean running = true;
-	
-	private static Map<String, String> tokenToNickname = new HashMap<>();
-	private static Map<String, Socket> connexions = new HashMap<>();
+    
+	private static Map<String, String> tokenToNickname = new ConcurrentHashMap<>();
+	private static Map<String, Socket> connexions = new ConcurrentHashMap<>();
 	
     public static void main( String[] args )
     {
-    	initializeTokens();
     	
     	try {
         	ServerSocket ss = new ServerSocket(App.PORT);
@@ -45,12 +44,9 @@ public class App
     }
     
 
-    private static void initializeTokens() {
-    	tokenToNickname.put("abc123", "toto");
-    	tokenToNickname.put("def456", "titi");
-    	tokenToNickname.put("ghi789", "tata");
-    	tokenToNickname.put("jkl123", "tutu");
-    }
+	public static void inscriptionToken(String token, String nickname){
+		tokenToNickname.put(token,nickname);
+	}
     
     public static void finish() {
         running = false;
