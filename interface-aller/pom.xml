@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>alom</groupId>
-    <artifactId>authentification</artifactId>
+    <artifactId>interface-aller</artifactId>
     <packaging>war</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>authentification</name>
+    <name>interface-aller</name>
 
     <build>
-        <finalName>authentification</finalName>
+        <finalName>interface-aller</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
