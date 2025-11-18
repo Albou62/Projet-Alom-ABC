@@ -42,7 +42,6 @@ public class Authentification {
             coupleLoginPassword.put(login,password);
             String token = generateToken();
             coupleLoginToken.put(login,token);
-            //TODO Envoie validation inscription
             Response response = client.target(INTERFACE_RETOUR_REGISTER_URL + "/authentification").post(token,login);
             return response;
         }
