@@ -17,14 +17,16 @@ public class Authentification {
     private static Map<String,String> coupleLoginToken = new HashMap<>();
     // Adapter l'URL si le contexte Tomcat diffère
     private static final String INTERFACE_RETOUR_REGISTER_URL = "http://127.0.0.1:8080/interface-retour/webapi/register";
+    private static final Client client = ClientBuilder.newClient();
 
     @GET
     @Path("connexion")
+    @Consumes(MediaType.APPLICATION_JSON)
     public connexion(String login, String password) {
         if (coupleLoginPassword.containsKey(login)){
             return "Login not found"
         }else if (coupleLoginPassword.get(login) == password) {
-            //TODO Connexion au token retour
+            Response response = client.targer(INTERFACE_RETOUR_REGISTER_URL+ "/connexion")
             return coupleLoginToken.get(login)
         }else{
             return "Login or password false"
@@ -35,13 +37,14 @@ public class Authentification {
     @Path("inscription")
     public inscription(String login, String password){
         if (coupleLoginPassword.containsKey(login)){
-            //TODO Renvoie erreur à aller
+            return "Login already exist"
         }else{
             coupleLoginPassword.put(login,password);
             String token = generateToken();
             coupleLoginToken.put(login,token);
             //TODO Envoie validation inscription
-            sendTokenToInterfaceRetour(login, token);
+            Response response = client.target(INTERFACE_RETOUR_REGISTER_URL + "/authentification").post(token,login);
+            return response;
         }
     };
 
@@ -57,7 +60,5 @@ public class Authentification {
         return result;
     }
 
-    private void sendTokenToInterfaceRetour(String login, String token) {
-       // à implémenter : envoyer le token à l'interface retour
-    }
+
 }
