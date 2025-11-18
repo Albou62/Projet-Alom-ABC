@@ -19,19 +19,20 @@ public class Authentification {
 
     @GET
     @Path("connexion")
-    public void connexion(String login, String password) {
+    public connexion(String login, String password) {
         if (coupleLoginPassword.containsKey(login)){
-            //TODO Renvoie erreur à aller
+            return "Login not found"
         }else if (coupleLoginPassword.get(login) == password) {
             //TODO Connexion au token retour
+            return coupleLoginToken.get(login)
         }else{
-            //TODO Message erreur connexion
+            return "Login or password false"
         }
     };
 
     @POST
     @Path("inscription")
-    public void inscription(String login, String password){
+    public inscription(String login, String password){
         if (coupleLoginPassword.containsKey(login)){
             //TODO Renvoie erreur à aller
         }else{
