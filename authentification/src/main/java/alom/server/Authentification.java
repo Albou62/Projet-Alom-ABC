@@ -7,8 +7,7 @@ import java.util.Random;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.MediaType;
+// imports Produces/MediaType non utilisés pour l'instant
 
 
 @Path("authentification")
@@ -16,6 +15,8 @@ public class Authentification {
 
     private static Map<String, String> coupleLoginPassword = new HashMap<>();
     private static Map<String,String> coupleLoginToken = new HashMap<>();
+    // Adapter l'URL si le contexte Tomcat diffère
+    private static final String INTERFACE_RETOUR_REGISTER_URL = "http://127.0.0.1:8080/interface-retour/webapi/register";
 
     @GET
     @Path("connexion")
@@ -40,6 +41,7 @@ public class Authentification {
             String token = generateToken();
             coupleLoginToken.put(login,token);
             //TODO Envoie validation inscription
+            sendTokenToInterfaceRetour(login, token);
         }
     };
 
@@ -55,4 +57,7 @@ public class Authentification {
         return result;
     }
 
+    private void sendTokenToInterfaceRetour(String login, String token) {
+       // à implémenter : envoyer le token à l'interface retour
+    }
 }
