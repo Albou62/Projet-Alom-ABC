@@ -24,6 +24,50 @@ public class Authentification {
         App.inscriptionToken(token, nickname);
         return Response.ok("Accept connexion").build();
     }
+    
+    @POST
+    @Path("subscribe")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response subscribe(@FormParam("token") String token,
+                              @FormParam("channel") String channel) {
+        if (token == null || token.isEmpty() || channel == null || channel.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("token et channel sont requis").build();
+        }
+        
+        // Récupérer le nickname depuis le token
+        String nickname = App.getNicknameFromToken(token);
+        if (nickname == null) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Token invalide").build();
+        }
+        
+        App.subscribeToChannel(nickname, channel);
+        return Response.ok("Abonné au channel " + channel).build();
+    }
+    
+    @POST
+    @Path("unsubscribe")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response unsubscribe(@FormParam("token") String token,
+                                @FormParam("channel") String channel) {
+        if (token == null || token.isEmpty() || channel == null || channel.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("token et channel sont requis").build();
+        }
+        
+        // Récupérer le nickname depuis le token
+        String nickname = App.getNicknameFromToken(token);
+        if (nickname == null) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Token invalide").build();
+        }
+        
+        App.unsubscribeFromChannel(nickname, channel);
+        return Response.ok("Désabonné du channel " + channel).build();
+    }
 }
 
 

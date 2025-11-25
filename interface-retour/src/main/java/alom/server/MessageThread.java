@@ -52,22 +52,10 @@ public class MessageThread implements Runnable {
 				System.out.println("Bienvenue " + nickname + " !");
 				out.println("Bienvenue " + nickname + " !");
 
-				String message;
 				
 				while(running) {
 					try {
-						System.out.println("On attend 10 secondes pour essayer d'envoyer un message à toto");
-						Thread.sleep(10000);
-						Socket totoSocket = connexions.get("toto");
-                
-						if (totoSocket != null && !totoSocket.isClosed()) {
-							PrintWriter out = new PrintWriter(totoSocket.getOutputStream(), true);
-							out.println("coucou");
-							System.out.println("Message 'coucou' envoyé à toto");
-						} 
-						else {
-							System.out.println("toto n'est pas connecté");
-						}
+						
 
 					} 
 					catch (Exception e) {
