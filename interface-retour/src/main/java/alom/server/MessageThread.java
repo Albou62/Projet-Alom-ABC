@@ -51,12 +51,15 @@ public class MessageThread implements Runnable {
 				System.out.println("Connexions: " + this.connexions);
 				System.out.println("Bienvenue " + nickname + " !");
 				out.println("Bienvenue " + nickname + " !");
-
 				
-				while(running) {
-					try {
-						
+				// Enregistrer la socket et démarrer le Kafka Consumer pour cet utilisateur
+				App.registerClientSocket(nickname, client);
+				App.startKafkaConsumerForUser(nickname);
 
+				// Garder la connexion ouverte pour que le consumer puisse envoyer des messages
+				while(running && !client.isClosed()) {
+					try {
+						Thread.sleep(1000);
 					} 
 					catch (Exception e) {
 						e.printStackTrace();

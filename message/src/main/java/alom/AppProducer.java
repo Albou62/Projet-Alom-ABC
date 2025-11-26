@@ -2,7 +2,15 @@ package alom;
 
 import java.net.InetAddress;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.serialization.LongSerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 /**
  * Producer Kafka simple qui envoie un message "message" sur le topic "topic"
@@ -10,7 +18,7 @@ import java.util.concurrent.Future;
  */
 public class AppProducer
 {
-    public static void main( String[] args )
+    public static void main( String[] args ) throws Exception, ExecutionException
     {
         System.out.println("début de la méthode main pour le producer Kafka");
         

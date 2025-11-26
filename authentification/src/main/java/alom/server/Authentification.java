@@ -21,11 +21,9 @@ public class Authentification {
 
     private static Map<String, String> coupleLoginPassword = new HashMap<>();
     private static Map<String,String> coupleLoginToken = new HashMap<>();
-    // Adapter l'URL si le contexte Tomcat diffère
     private static final String INTERFACE_RETOUR_BASE = "http://127.0.0.1:8080/interface-retour/webapi/authentification";
     private static final Client client = ClientBuilder.newClient();
 
-    // DTO pour la désérialisation automatique du JSON
     public static class Credentials {
         public String login;
         public String password;

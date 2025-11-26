@@ -8,6 +8,7 @@ import jakarta.servlet.annotation.WebListener;
 public class Listener implements ServletContextListener {
 
     private Thread tcpServerThread;
+    private Thread kafkaConsumersThread;
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
@@ -25,6 +26,19 @@ public class Listener implements ServletContextListener {
         }, "tcp-interface-retour");
         tcpServerThread.setDaemon(true); // ne bloque pas l'arrêt de Tomcat
         tcpServerThread.start();
+
+        // Démarre le thread pour les consumers Kafka
+        kafkaConsumersThread = new Thread(() -> {
+            try {
+                KafkaConsumerClass.consume();
+            } 
+            catch (Throwable t) {
+                System.err.println("[Listener] Erreur au lancement des consumers Kafka: " + t.getMessage());
+                t.printStackTrace();
+            }
+        }, "kafka-consumers");
+        kafkaConsumersThread.setDaemon(true);
+        kafkaConsumersThread.start();
     }
 
     @Override

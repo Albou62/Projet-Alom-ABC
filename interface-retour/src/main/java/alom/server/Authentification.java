@@ -22,6 +22,9 @@ public class Authentification {
                     .entity("token et nickname sont requis").build();
         }
         App.inscriptionToken(token, nickname);
+        
+        App.startKafkaConsumerForUser(nickname);
+        
         return Response.ok("Accept connexion").build();
     }
     
@@ -36,7 +39,6 @@ public class Authentification {
                     .entity("token et channel sont requis").build();
         }
         
-        // Récupérer le nickname depuis le token
         String nickname = App.getNicknameFromToken(token);
         if (nickname == null) {
             return Response.status(Response.Status.UNAUTHORIZED)
@@ -58,7 +60,6 @@ public class Authentification {
                     .entity("token et channel sont requis").build();
         }
         
-        // Récupérer le nickname depuis le token
         String nickname = App.getNicknameFromToken(token);
         if (nickname == null) {
             return Response.status(Response.Status.UNAUTHORIZED)

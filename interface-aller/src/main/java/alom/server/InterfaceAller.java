@@ -75,8 +75,29 @@ public class InterfaceAller {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response message(String jsonData) {
 		try {
+			String message = extractJsonField(jsonData, "message");
+			String token = extractJsonField(jsonData, "token");
+			
+			if (message == null || token == null) {
+				return Response.status(400)
+							  .entity("{\"erreur\": \"Les champs 'message' et 'token' sont requis\"}")
+							  .build();
+			}
+			
+			String targetUrl;
+			
+			if (message.trim().startsWith("[")) {
+				targetUrl = "http://127.0.0.1:8080/channel-producer/webapi/send";
+			} else if (message.trim().startsWith("(")) {
+				targetUrl = "http://127.0.0.1:8080/message/webapi/send";
+			} else {
+				return Response.status(400)
+							  .entity("{\"erreur\": \"Format de message invalide. Utilisez '[channel] (user) msg' ou '(to) (from) msg'\"}")
+							  .build();
+			}
+			
 			Client client = ClientBuilder.newClient();
-			Response response = client.target(AUTHENTIFICATION_SERVICE + "/authentification/inscription")
+			Response response = client.target(targetUrl)
 									  .request(MediaType.APPLICATION_JSON)
 									  .post(Entity.json(jsonData));
 			
@@ -89,52 +110,15 @@ public class InterfaceAller {
 		} 
 
         catch (Exception e) {
-			return Response.status(500)
-						  .entity("{\"erreur\": \"Service message indisponible\"}")
-						  .build();
-		}
-	}
-	
-	/**
-	 * Endpoint pour envoyer un message sur un channel
-	 * Format JSON: {"message": "[general] (Alice) Bonjour", "token": "..."}
-	 */
-	@POST
-	@Path("channel")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response channel(String jsonData) {
-		try {
-			String message = extractJsonField(jsonData, "message");
-			String token = extractJsonField(jsonData, "token");
-			
-			if (message == null || token == null) {
-				return Response.status(400)
-							  .entity("{\"erreur\": \"Les champs 'message' et 'token' sont requis\"}")
-							  .build();
-			}
-			
-			// Le message doit avoir le format "[channel] (user) message"
-			alom.App.processAndSendMessage(message);
-			
-			System.out.println("[InterfaceAller] Message traité et envoyé sur Kafka: " + message);
-			
-			return Response.status(200)
-						  .entity("{\"message\": \"Message envoyé\"}")
-						  .build();
-		} 
-		catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Erreur lors de l'envoi du message: " + e.getMessage() + "\"}")
+						  .entity("{\"erreur\": \"Service message indisponible: " + e.getMessage() + "\"}")
 						  .build();
 		}
 	}
 	
-	/**
-	 * Endpoint pour s'abonner à un channel
-	 * Format JSON: {"channel": "general", "token": "..."}
-	 */
+
+	
 	@POST
 	@Path("subscribe")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -150,35 +134,43 @@ public class InterfaceAller {
 							  .build();
 			}
 			
-			// Appeler interface-retour pour s'abonner
 			Client client = ClientBuilder.newClient();
-			jakarta.ws.rs.core.Form form = new jakarta.ws.rs.core.Form();
-			form.param("token", token);
-			form.param("channel", channel);
+			Response nicknameResponse = client.target(INTERFACE_RETOUR_SERVICE + "/auth/nickname")
+											  .queryParam("token", token)
+											  .request(MediaType.TEXT_PLAIN)
+											  .get();
 			
-			Response response = client.target(INTERFACE_RETOUR_SERVICE + "/authentification/subscribe")
-									  .request(MediaType.TEXT_PLAIN)
-									  .post(Entity.form(form));
+			String nickname = nicknameResponse.readEntity(String.class);
+			nicknameResponse.close();
+			
+			if (nickname == null || nickname.isEmpty() || nickname.equals("null")) {
+				client.close();
+				return Response.status(401)
+							  .entity("{\"erreur\": \"Token invalide\"}")
+							  .build();
+			}
+			
+			String subscribeData = String.format("{\"channel\": \"%s\", \"nickname\": \"%s\"}", channel, nickname);
+			
+			Response response = client.target("http://127.0.0.1:8080/channel-producer/webapi/send/subscribe")
+									  .request(MediaType.APPLICATION_JSON)
+									  .post(Entity.json(subscribeData));
 			
 			String result = response.readEntity(String.class);
 			int status = response.getStatus();
 			response.close();
 			client.close();
 			
-			return Response.status(status).entity("{\"message\": \"" + result + "\"}").build();
+			return Response.status(status).entity(result).build();
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service indisponible\"}")
+						  .entity("{\"erreur\": \"Service indisponible: " + e.getMessage() + "\"}")
 						  .build();
 		}
 	}
-	
-	/**
-	 * Endpoint pour se désabonner d'un channel
-	 * Format JSON: {"channel": "general", "token": "..."}
-	 */
+
 	@POST
 	@Path("unsubscribe")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -194,34 +186,43 @@ public class InterfaceAller {
 							  .build();
 			}
 			
-			// Appeler interface-retour pour se désabonner
 			Client client = ClientBuilder.newClient();
-			jakarta.ws.rs.core.Form form = new jakarta.ws.rs.core.Form();
-			form.param("token", token);
-			form.param("channel", channel);
+			Response nicknameResponse = client.target(INTERFACE_RETOUR_SERVICE + "/auth/nickname")
+											  .queryParam("token", token)
+											  .request(MediaType.TEXT_PLAIN)
+											  .get();
 			
-			Response response = client.target(INTERFACE_RETOUR_SERVICE + "/authentification/unsubscribe")
-									  .request(MediaType.TEXT_PLAIN)
-									  .post(Entity.form(form));
+			String nickname = nicknameResponse.readEntity(String.class);
+			nicknameResponse.close();
+			
+			if (nickname == null || nickname.isEmpty() || nickname.equals("null")) {
+				client.close();
+				return Response.status(401)
+							  .entity("{\"erreur\": \"Token invalide\"}")
+							  .build();
+			}
+			
+			String unsubscribeData = String.format("{\"channel\": \"%s\", \"nickname\": \"%s\"}", channel, nickname);
+			
+			Response response = client.target("http://127.0.0.1:8080/channel-producer/webapi/send/unsubscribe")
+									  .request(MediaType.APPLICATION_JSON)
+									  .post(Entity.json(unsubscribeData));
 			
 			String result = response.readEntity(String.class);
 			int status = response.getStatus();
 			response.close();
 			client.close();
 			
-			return Response.status(status).entity("{\"message\": \"" + result + "\"}").build();
+			return Response.status(status).entity(result).build();
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service indisponible\"}")
+						  .entity("{\"erreur\": \"Service indisponible: " + e.getMessage() + "\"}")
 						  .build();
 		}
 	}
 	
-	/**
-	 * Méthode utilitaire pour extraire un champ JSON
-	 */
 	private String extractJsonField(String json, String fieldName) {
 		try {
 			String searchKey = "\"" + fieldName + "\"";
