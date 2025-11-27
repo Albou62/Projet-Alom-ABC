@@ -57,7 +57,6 @@ public class KafkaConsumerIndividual implements Runnable {
                     String message = record.value();
                     System.out.println("[KafkaConsumerIndividual] Message reçu pour " + nickname + ": " + message);
                     
-                    // Envoyer le message via la socket TCP
                     sendMessageToClient(message);
                 }
             }

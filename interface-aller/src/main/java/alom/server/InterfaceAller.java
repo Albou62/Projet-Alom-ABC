@@ -84,8 +84,6 @@ public class InterfaceAller {
 							  .build();
 			}
 			
-			// Le message doit avoir le format "[channel] (user) message"
-			// Appeler directement App.processAndSendMessage() de channel-producer
 			alom.App.processAndSendMessage(message);
 			
 			System.out.println("[InterfaceAller] Message traité et envoyé sur Kafka: " + message);
@@ -120,7 +118,6 @@ public class InterfaceAller {
 			String targetUrl;
 			
 			if (message.trim().startsWith("[")) {
-				// Message de channel - appeler directement alom.App
 				alom.App.processAndSendMessage(message);
 				return Response.status(200)
 							  .entity("{\"message\": \"Message envoyé sur channel\"}\n")
@@ -171,7 +168,6 @@ public class InterfaceAller {
 							  .build();
 			}
 			
-			// Appeler interface-retour pour s'abonner
 			Client client = ClientBuilder.newClient();
 			jakarta.ws.rs.core.Form form = new jakarta.ws.rs.core.Form();
 			form.param("token", token);
@@ -211,7 +207,6 @@ public class InterfaceAller {
 							  .build();
 			}
 			
-			// Appeler interface-retour pour se désabonner
 			Client client = ClientBuilder.newClient();
 			jakarta.ws.rs.core.Form form = new jakarta.ws.rs.core.Form();
 			form.param("token", token);

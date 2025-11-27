@@ -9,10 +9,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Producer Kafka qui transforme les messages de format "[channel] (user) message"
- * et envoie "(user) message" sur le channel correspondant
- */
+
 public class App {
     
     private static final String TOPIC = "channels";
@@ -26,29 +23,25 @@ public class App {
         producer = new KafkaProducer<>(props);
     }
     
-    /**
-     * Parse le message au format "[channel] (user) message" et envoie "(user) message" sur Kafka
-     * @param fullMessage Message complet au format "[channel] (user) message"
-     */
     public static void processAndSendMessage(String fullMessage) {
-        // Pattern pour extraire: [channel] (user) message
         Pattern pattern = Pattern.compile("\\[([^\\]]+)\\]\\s*(.+)");
         Matcher matcher = pattern.matcher(fullMessage);
         
         if (matcher.find()) {
-            String channel = matcher.group(1);  // Ex: "general"
-            String content = matcher.group(2);  // Ex: "(A) Bonjour"
+            String channel = matcher.group(1);  
+            String content = matcher.group(2);  
             
-            // Envoyer sur Kafka
             ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, channel, content);
             producer.send(record, (metadata, exception) -> {
                 if (exception != null) {
                     System.err.println("Erreur lors de l'envoi: " + exception.getMessage());
-                } else {
+                } 
+                else {
                     System.out.println("[Producer] Message envoyé sur channel '" + channel + "': " + content);
                 }
             });
-        } else {
+        } 
+        else {
             System.err.println("Format de message invalide: " + fullMessage);
             System.err.println("Format attendu: [channel] (user) message");
         }
@@ -56,7 +49,6 @@ public class App {
     
     public static void main(String[] args) {
         if (args.length > 0) {
-            // Pour tester: java -cp ... alom.App "[general] (Alice) Bonjour tout le monde"
             String message = String.join(" ", args);
             processAndSendMessage(message);
         } else {
