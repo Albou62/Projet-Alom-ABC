@@ -53,7 +53,7 @@ public class ChannelProducer {
 			
 			if (message == null) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Le champ 'message' est requis\"}")
+							  .entity("{\"erreur\": \"Le champ 'message' est requis\"}\n")
 							  .build();
 			}
 			
@@ -61,7 +61,7 @@ public class ChannelProducer {
 			
 			if (!matcher.matches()) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Format invalide. Utilisez: [channel] (user) message\"}")
+							  .entity("{\"erreur\": \"Format invalide. Utilisez: [channel] (user) message\"}\n")
 							  .build();
 			}
 			
@@ -119,7 +119,7 @@ public class ChannelProducer {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Erreur lors de l'envoi: " + e.getMessage() + "\"}")
+						  .entity("{\"erreur\": \"Erreur lors de l'envoi: " + e.getMessage() + "\"}\n")
 						  .build();
 		}
 	}
@@ -136,7 +136,7 @@ public class ChannelProducer {
 			
 			if (channel == null || nickname == null) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Les champs 'channel' et 'nickname' sont requis\"}")
+							  .entity("{\"erreur\": \"Les champs 'channel' et 'nickname' sont requis\"}\n")
 							  .build();
 			}
 			
@@ -147,7 +147,7 @@ public class ChannelProducer {
 			
 			return Response.status(200)
 						  .entity(String.format(
-							  "{\"success\": true, \"message\": \"%s abonné au channel '%s'\"}",
+							  "{\"success\": true, \"message\": \"%s abonné au channel '%s'\"}\n",
 							  nickname, channel
 						  ))
 						  .build();
@@ -155,7 +155,7 @@ public class ChannelProducer {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"" + e.getMessage() + "\"}")
+						  .entity("{\"erreur\": \"" + e.getMessage() + "\"}\n")
 						  .build();
 		}
 	}
@@ -172,7 +172,7 @@ public class ChannelProducer {
 			
 			if (channel == null || nickname == null) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Les champs 'channel' et 'nickname' sont requis\"}")
+							  .entity("{\"erreur\": \"Les champs 'channel' et 'nickname' sont requis\"}\n")
 							  .build();
 			}
 			
@@ -185,7 +185,7 @@ public class ChannelProducer {
 			
 			return Response.status(200)
 						  .entity(String.format(
-							  "{\"success\": true, \"message\": \"%s désabonné du channel '%s'\"}",
+							  "{\"success\": true, \"message\": \"%s désabonné du channel '%s'\"}\n",
 							  nickname, channel
 						  ))
 						  .build();
@@ -193,7 +193,7 @@ public class ChannelProducer {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"" + e.getMessage() + "\"}")
+						  .entity("{\"erreur\": \"" + e.getMessage() + "\"}\n")
 						  .build();
 		}
 	}

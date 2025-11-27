@@ -46,7 +46,7 @@ public class Authentification {
         }
         
         App.subscribeToChannel(nickname, channel);
-        return Response.ok("Abonné au channel " + channel).build();
+        return Response.ok("Vous êtes maintenant abonné au channel " + channel).build();
     }
     
     @POST
@@ -67,7 +67,7 @@ public class Authentification {
         }
         
         App.unsubscribeFromChannel(nickname, channel);
-        return Response.ok("Désabonné du channel " + channel).build();
+        return Response.ok("Vous êtes maintenant désabonné du channel " + channel).build();
     }
 }
 

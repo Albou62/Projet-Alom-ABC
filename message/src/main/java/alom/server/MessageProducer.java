@@ -48,7 +48,7 @@ public class MessageProducer {
 			
 			if (message == null) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Le champ 'message' est requis\"}")
+							  .entity("{\"erreur\": \"Le champ 'message' est requis\"}\n")
 							  .build();
 			}
 			
@@ -56,7 +56,7 @@ public class MessageProducer {
 			
 			if (!matcher.matches()) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Format invalide. Utilisez: (destinataire) (expediteur) message\"}")
+							  .entity("{\"erreur\": \"Format invalide. Utilisez: (destinataire) (expediteur) message\"}\n")
 							  .build();
 			}
 			
@@ -89,7 +89,7 @@ public class MessageProducer {
 			
 			return Response.status(200)
 						  .entity(String.format(
-							  "{\"success\": true, \"message\": \"Message envoyé à %s\", \"topic\": \"%s\"}",
+							  "{\"success\": true, \"message\": \"Message envoyé à %s\", \"topic\": \"%s\"}\n",
 							  destinataire, topic
 						  ))
 						  .build();
@@ -97,7 +97,7 @@ public class MessageProducer {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Erreur lors de l'envoi: " + e.getMessage() + "\"}")
+						  .entity("{\"erreur\": \"Erreur lors de l'envoi: " + e.getMessage() + "\"}\n")
 						  .build();
 		}
 	}

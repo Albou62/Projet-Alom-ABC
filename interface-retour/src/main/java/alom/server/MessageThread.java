@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -30,33 +29,33 @@ public class MessageThread implements Runnable {
 	@Override
 	public void run() {
 
-			try {
-				in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-				out = new PrintWriter(client.getOutputStream(), true);
+		try {
+			in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+			out = new PrintWriter(client.getOutputStream(), true);
 
-				String token = in.readLine();
-				System.out.println("Le client: " + client.getRemoteSocketAddress() + " a envoyé le token: " + token);
-				
+			out.println("=== Bienvenue sur le serveur de messagerie ===");
+			out.println("Veuillez saisir votre token d'authentification:");
+			
+			String token = in.readLine();
+			System.out.println("Le client: " + client.getRemoteSocketAddress() + " a envoyé le token: " + token);
+			
+			nickname = tokenToNickname.get(token);
+
+			while (nickname == null && running) {
+				System.out.println("Client: " +  client.getRemoteSocketAddress());
+				System.out.println("Token invalide: " + token);
+				out.println("Erreur: Token invalide");
+				out.println("Veuillez saisir un token valide:");
+				token = in.readLine();
 				nickname = tokenToNickname.get(token);
-
-				while (nickname == null && running) {
-					System.out.println("Client: " +  client.getRemoteSocketAddress());
-					System.out.println("Token invalide: " + token);
-					out.println("Erreur: Token invalide");
-					token = in.readLine();
-					nickname = tokenToNickname.get(token);
-				}
-
-				this.connexions.put(nickname,client);
+			}				this.connexions.put(nickname,client);
 				System.out.println("Connexions: " + this.connexions);
 				System.out.println("Bienvenue " + nickname + " !");
 				out.println("Bienvenue " + nickname + " !");
 				
-				// Enregistrer la socket et démarrer le Kafka Consumer pour cet utilisateur
 				App.registerClientSocket(nickname, client);
 				App.startKafkaConsumerForUser(nickname);
 
-				// Garder la connexion ouverte pour que le consumer puisse envoyer des messages
 				while(running && !client.isClosed()) {
 					try {
 						Thread.sleep(1000);

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import alom.KafkaConsumerIndividual;
+
 
 public class App
 {
@@ -17,9 +19,11 @@ public class App
 	private static Map<String, String> tokenToNickname = new ConcurrentHashMap<>();
 	private static Map<String, Socket> connexions = new ConcurrentHashMap<>();
 	
+	// Map pour gérer les abonnements aux channels: channel -> Map<nickname, Boolean>
 	private static Map<String, ConcurrentHashMap<String, Boolean>> channelSubscriptions = new ConcurrentHashMap<>();
 	
-	private static Map<String, KafkaConsumerClass> kafkaConsumers = new ConcurrentHashMap<>();
+	// Map pour gérer les consumers Kafka individuels: nickname -> KafkaConsumerIndividual
+	private static Map<String, KafkaConsumerIndividual> kafkaConsumers = new ConcurrentHashMap<>();
 	
     public static void main( String[] args )
     {
@@ -52,13 +56,18 @@ public class App
 		tokenToNickname.put(token,nickname);
 	}
 	
-
+	/**
+	 * Abonner un utilisateur à un channel
+	 */
 	public static void subscribeToChannel(String nickname, String channel) {
 		channelSubscriptions.computeIfAbsent(channel, k -> new ConcurrentHashMap<>())
 			.put(nickname, true);
 		System.out.println("[App] " + nickname + " abonné au channel '" + channel + "'");
 	}
-
+	
+	/**
+	 * Désabonner un utilisateur d'un channel
+	 */
 	public static void unsubscribeFromChannel(String nickname, String channel) {
 		ConcurrentHashMap<String, Boolean> subscribers = channelSubscriptions.get(channel);
 		if (subscribers != null) {
@@ -67,6 +76,9 @@ public class App
 		}
 	}
 	
+	/**
+	 * Envoyer un message à tous les abonnés d'un channel
+	 */
 	public static void sendMessageToChannel(String channel, String message) {
 		ConcurrentHashMap<String, Boolean> subscribers = channelSubscriptions.get(channel);
 		if (subscribers == null || subscribers.isEmpty()) {
@@ -90,11 +102,24 @@ public class App
 		}
 	}
 	
+	/**
+	 * Récupérer le nickname depuis un token
+	 */
 	public static String getNicknameFromToken(String token) {
 		return tokenToNickname.get(token);
 	}
 	
-
+	/**
+	 * Enregistrer la socket d'un client
+	 */
+	public static void registerClientSocket(String nickname, Socket socket) {
+		connexions.put(nickname, socket);
+		System.out.println("[App] Socket enregistrée pour " + nickname);
+	}
+	
+	/**
+	 * Démarrer un consumer Kafka individuel pour un utilisateur
+	 */
 	public static void startKafkaConsumerForUser(String nickname) {
 		Socket clientSocket = connexions.get(nickname);
 		
@@ -103,30 +128,28 @@ public class App
 			return;
 		}
 		
-		KafkaConsumerClass oldConsumer = kafkaConsumers.get(nickname);
+		// Arrêter l'ancien consumer s'il existe
+		KafkaConsumerIndividual oldConsumer = kafkaConsumers.get(nickname);
 		if (oldConsumer != null) {
 			oldConsumer.stop();
 		}
 		
-		KafkaConsumerClass consumer = new KafkaConsumerClass(nickname, clientSocket);
+		// Créer et démarrer un nouveau consumer
+		KafkaConsumerIndividual consumer = new KafkaConsumerIndividual(nickname, clientSocket);
 		kafkaConsumers.put(nickname, consumer);
 		
 		Thread consumerThread = new Thread(consumer);
 		consumerThread.setDaemon(true);
 		consumerThread.start();
 		
-		System.out.println("[App] Kafka Consumer démarré pour " + nickname);
-	}
-	
-	public static void registerClientSocket(String nickname, Socket socket) {
-		connexions.put(nickname, socket);
-		System.out.println("[App] Socket enregistrée pour " + nickname);
+		System.out.println("[App] Kafka Consumer individuel démarré pour " + nickname);
 	}
     
     public static void finish() {
         running = false;
         
-        for (KafkaConsumerClass consumer : kafkaConsumers.values()) {
+        // Arrêter tous les consumers individuels
+        for (KafkaConsumerIndividual consumer : kafkaConsumers.values()) {
             consumer.stop();
         }
     }

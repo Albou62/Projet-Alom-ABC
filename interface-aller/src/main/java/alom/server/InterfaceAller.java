@@ -38,7 +38,7 @@ public class InterfaceAller {
         
         catch (Exception e) {
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service authentification indisponible\"}")
+						  .entity("{\"erreur\": \"Service authentification indisponible\"}\n")
 						  .build();
 		}
 	}
@@ -64,11 +64,44 @@ public class InterfaceAller {
 
         catch (Exception e) {
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service authentification indisponible\"}")
+						  .entity("{\"erreur\": \"Service authentification indisponible\"}\n")
 						  .build();
 		}
 	}
 
+	@POST
+	@Path("channel")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response channel(String jsonData) {
+		try {
+			String message = extractJsonField(jsonData, "message");
+			String token = extractJsonField(jsonData, "token");
+			
+			if (message == null || token == null) {
+				return Response.status(400)
+							  .entity("{\"erreur\": \"Les champs 'message' et 'token' sont requis\"}\n")
+							  .build();
+			}
+			
+			// Le message doit avoir le format "[channel] (user) message"
+			// Appeler directement App.processAndSendMessage() de channel-producer
+			alom.App.processAndSendMessage(message);
+			
+			System.out.println("[InterfaceAller] Message traité et envoyé sur Kafka: " + message);
+			
+			return Response.status(200)
+						  .entity("{\"message\": \"Message envoyé\"}\n")
+						  .build();
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(500)
+						  .entity("{\"erreur\": \"Erreur lors de l'envoi du message: " + e.getMessage() + "\"}\n")
+						  .build();
+		}
+	}
+	
 	@POST
 	@Path("message")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -80,19 +113,23 @@ public class InterfaceAller {
 			
 			if (message == null || token == null) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Les champs 'message' et 'token' sont requis\"}")
+							  .entity("{\"erreur\": \"Les champs 'message' et 'token' sont requis\"}\n")
 							  .build();
 			}
 			
 			String targetUrl;
 			
 			if (message.trim().startsWith("[")) {
-				targetUrl = "http://127.0.0.1:8080/channel-producer/webapi/send";
+				// Message de channel - appeler directement alom.App
+				alom.App.processAndSendMessage(message);
+				return Response.status(200)
+							  .entity("{\"message\": \"Message envoyé sur channel\"}\n")
+							  .build();
 			} else if (message.trim().startsWith("(")) {
 				targetUrl = "http://127.0.0.1:8080/message/webapi/send";
 			} else {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Format de message invalide. Utilisez '[channel] (user) msg' ou '(to) (from) msg'\"}")
+							  .entity("{\"erreur\": \"Format de message invalide. Utilisez '[channel] (user) msg' ou '(to) (from) msg'\"}\n")
 							  .build();
 			}
 			
@@ -112,7 +149,7 @@ public class InterfaceAller {
         catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service message indisponible: " + e.getMessage() + "\"}")
+						  .entity("{\"erreur\": \"Service message indisponible: " + e.getMessage() + "\"}\n")
 						  .build();
 		}
 	}
@@ -130,44 +167,32 @@ public class InterfaceAller {
 			
 			if (channel == null || token == null) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Les champs 'channel' et 'token' sont requis\"}")
+							  .entity("{\"erreur\": \"Les champs 'channel' et 'token' sont requis\"}\n")
 							  .build();
 			}
 			
+			// Appeler interface-retour pour s'abonner
 			Client client = ClientBuilder.newClient();
-			Response nicknameResponse = client.target(INTERFACE_RETOUR_SERVICE + "/auth/nickname")
-											  .queryParam("token", token)
-											  .request(MediaType.TEXT_PLAIN)
-											  .get();
+			jakarta.ws.rs.core.Form form = new jakarta.ws.rs.core.Form();
+			form.param("token", token);
+			form.param("channel", channel);
 			
-			String nickname = nicknameResponse.readEntity(String.class);
-			nicknameResponse.close();
-			
-			if (nickname == null || nickname.isEmpty() || nickname.equals("null")) {
-				client.close();
-				return Response.status(401)
-							  .entity("{\"erreur\": \"Token invalide\"}")
-							  .build();
-			}
-			
-			String subscribeData = String.format("{\"channel\": \"%s\", \"nickname\": \"%s\"}", channel, nickname);
-			
-			Response response = client.target("http://127.0.0.1:8080/channel-producer/webapi/send/subscribe")
-									  .request(MediaType.APPLICATION_JSON)
-									  .post(Entity.json(subscribeData));
+			Response response = client.target(INTERFACE_RETOUR_SERVICE + "/authentification/subscribe")
+									  .request(MediaType.TEXT_PLAIN)
+									  .post(Entity.form(form));
 			
 			String result = response.readEntity(String.class);
 			int status = response.getStatus();
 			response.close();
 			client.close();
 			
-			return Response.status(status).entity(result).build();
+			return Response.status(status).entity("{\"message\": \"" + result + "\"}\n").build();
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service indisponible: " + e.getMessage() + "\"}")
-						  .build();
+					  .entity("{\"erreur\": \"Service indisponible\"}\n")
+					  .build();
 		}
 	}
 
@@ -182,44 +207,32 @@ public class InterfaceAller {
 			
 			if (channel == null || token == null) {
 				return Response.status(400)
-							  .entity("{\"erreur\": \"Les champs 'channel' et 'token' sont requis\"}")
+							  .entity("{\"erreur\": \"Les champs 'channel' et 'token' sont requis\"}\n")
 							  .build();
 			}
 			
+			// Appeler interface-retour pour se désabonner
 			Client client = ClientBuilder.newClient();
-			Response nicknameResponse = client.target(INTERFACE_RETOUR_SERVICE + "/auth/nickname")
-											  .queryParam("token", token)
-											  .request(MediaType.TEXT_PLAIN)
-											  .get();
+			jakarta.ws.rs.core.Form form = new jakarta.ws.rs.core.Form();
+			form.param("token", token);
+			form.param("channel", channel);
 			
-			String nickname = nicknameResponse.readEntity(String.class);
-			nicknameResponse.close();
-			
-			if (nickname == null || nickname.isEmpty() || nickname.equals("null")) {
-				client.close();
-				return Response.status(401)
-							  .entity("{\"erreur\": \"Token invalide\"}")
-							  .build();
-			}
-			
-			String unsubscribeData = String.format("{\"channel\": \"%s\", \"nickname\": \"%s\"}", channel, nickname);
-			
-			Response response = client.target("http://127.0.0.1:8080/channel-producer/webapi/send/unsubscribe")
-									  .request(MediaType.APPLICATION_JSON)
-									  .post(Entity.json(unsubscribeData));
+			Response response = client.target(INTERFACE_RETOUR_SERVICE + "/authentification/unsubscribe")
+									  .request(MediaType.TEXT_PLAIN)
+									  .post(Entity.form(form));
 			
 			String result = response.readEntity(String.class);
 			int status = response.getStatus();
 			response.close();
 			client.close();
 			
-			return Response.status(status).entity(result).build();
+			return Response.status(status).entity("{\"message\": \"" + result + "\"}\n").build();
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service indisponible: " + e.getMessage() + "\"}")
-						  .build();
+					  .entity("{\"erreur\": \"Service indisponible\"}\n")
+					  .build();
 		}
 	}
 	

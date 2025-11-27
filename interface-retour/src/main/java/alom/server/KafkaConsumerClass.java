@@ -1,8 +1,6 @@
 package alom.server;
 
-import java.net.Socket;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -13,64 +11,53 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 
 public class KafkaConsumerClass {
     
-    private final String nickname;
-    private final Socket clientSocket;
-    private volatile boolean running = true;
-    
-    public KafkaConsumerClass(String nickname, Socket clientSocket) {
-        this.nickname = nickname;
-        this.clientSocket = clientSocket;
+    public static void main(String[] args) {
+        consume();
     }
     
     public static void consume() {
-        String topic = "user-" + nickname;
-        
-        System.out.println("[KafkaConsumer] Démarrage consumer pour " + nickname + " sur topic: " + topic);
+        System.out.println("Démarrage du Consumer de channels");
         
         Properties configuration = new Properties();
-        configuration.put(ConsumerConfig.GROUP_ID_CONFIG, "consumer-" + nickname);
+        configuration.put(ConsumerConfig.GROUP_ID_CONFIG, "ChannelConsumerGroup");
         configuration.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         configuration.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         configuration.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         configuration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        configuration.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        
+        System.out.println("Configuration effectuée");
         
         KafkaConsumer<String, String> consumer = new KafkaConsumer<>(configuration);
-        consumer.subscribe(Collections.singletonList(topic));
         
+        System.out.println("Consommateur instancié");
+        
+        consumer.subscribe(java.util.Arrays.asList("channels"));
         Duration duration = Duration.ofMillis(1000);
         
-        System.out.println("[KafkaConsumer] " + nickname + " écoute le topic '" + topic + "'");
+        System.out.println("En attente de messages sur le topic 'channels'...");
         
         try {
-            while (running && !clientSocket.isClosed()) {
+            while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(duration);
                 
                 records.forEach(record -> {
+                    String channelName = record.key();
                     String message = record.value();
-                    System.out.println("[KafkaConsumer] Message reçu pour " + nickname + ": " + message);
+                    System.out.println("Message reçu - Channel: " + channelName + ", Message: " + message);
                     
                     try {
-                        if (clientSocket != null && !clientSocket.isClosed()) {
-                            clientSocket.getOutputStream().write((message + "\n").getBytes());
-                            clientSocket.getOutputStream().flush();
-                            System.out.println("[KafkaConsumer] Message envoyé à " + nickname + " via TCP");
-                        }
+                        App.sendMessageToChannel(channelName, message);
                     } catch (Exception e) {
-                        System.err.println("[KafkaConsumer] Erreur envoi TCP à " + nickname + ": " + e.getMessage());
-                        running = false;
+                        System.err.println("Erreur lors de l'envoi du message au channel: " + e.getMessage());
                     }
                 });
             }
         } catch (Exception e) {
-            System.err.println("[KafkaConsumer] Erreur consumer " + nickname + ": " + e.getMessage());
+            System.err.println("[KafkaConsumer] Erreur consumer: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             consumer.close();
-            System.out.println("[KafkaConsumer] Consumer fermé pour " + nickname);
+            System.out.println("[KafkaConsumer] Consumer fermé");
         }
-    }
-    
-    public void stop() {
-        running = false;
     }
 }
