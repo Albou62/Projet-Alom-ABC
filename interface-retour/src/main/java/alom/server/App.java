@@ -84,7 +84,8 @@ public class App
 			Socket clientSocket = connexions.get(nickname);
 			if (clientSocket != null && !clientSocket.isClosed()) {
 				try {
-					clientSocket.getOutputStream().write((message + "\n").getBytes());
+					clientSocket.getOutputStream().write(('[' + channel + "] " + message + "\n").getBytes());
+					//System.out.println("[App] Envoi du message: " + message);
 					clientSocket.getOutputStream().flush();
 					System.out.println("[App] Message envoyé à " + nickname);
 				} catch (Exception e) {

@@ -69,6 +69,27 @@ public class Authentification {
         App.unsubscribeFromChannel(nickname, channel);
         return Response.ok("Vous êtes maintenant désabonné du channel " + channel).build();
     }
+    
+    @POST
+    @Path("validate")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response validateToken(String token) {
+        if (token == null || token.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Token requis").build();
+        }
+        
+        String nickname = App.getNicknameFromToken(token);
+        if (nickname == null) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Token invalide").build();
+        }
+        
+        return Response.ok(nickname).build();
+    }
 }
+
+
 
 

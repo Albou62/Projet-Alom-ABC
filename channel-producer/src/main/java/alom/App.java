@@ -53,7 +53,6 @@ public class App {
             processAndSendMessage(message);
         } else {
             System.out.println("Usage: java alom.App \"[channel] (user) message\"");
-            System.out.println("Exemple: java alom.App \"[general] (Alice) Bonjour tout le monde\"");
         }
     }
 }

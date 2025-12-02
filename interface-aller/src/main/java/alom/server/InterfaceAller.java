@@ -108,6 +108,7 @@ public class InterfaceAller {
 		try {
 			String message = extractJsonField(jsonData, "message");
 			String token = extractJsonField(jsonData, "token");
+			String destinataire = extractJsonField(jsonData, "destinataire");
 			
 			if (message == null || token == null) {
 				return Response.status(400)
@@ -115,39 +116,78 @@ public class InterfaceAller {
 							  .build();
 			}
 			
-			String targetUrl;
+			// Si destinataire est fourni, c'est un message direct
+			if (destinataire != null && !destinataire.isEmpty()) {
+				// Récupérer le nickname de l'expéditeur depuis le token
+				String expediteur = getNicknameFromToken(token);
+				if (expediteur == null) {
+					return Response.status(401)
+								  .entity("{\"erreur\": \"Token invalide\"}\n")
+								  .build();
+				}
+				
+				// Envoyer le message via le service message
+				String targetUrl = "http://127.0.0.1:8080/message/webapi/send";
+				String formattedMessage = "(" + destinataire + ") (" + expediteur + ") " + message;
+				String newJsonData = "{\"message\":\"" + formattedMessage + "\",\"token\":\"" + token + "\"}";
+				
+				Client client = ClientBuilder.newClient();
+				Response response = client.target(targetUrl)
+										  .request(MediaType.APPLICATION_JSON)
+										  .post(Entity.json(newJsonData));
+				
+				String result = response.readEntity(String.class);
+				int status = response.getStatus();
+				response.close();
+				client.close();
+				
+				return Response.status(status).entity(result).build();
+			}
 			
+			// Sinon, vérifier si c'est un message channel avec [channel]
 			if (message.trim().startsWith("[")) {
 				alom.App.processAndSendMessage(message);
 				return Response.status(200)
 							  .entity("{\"message\": \"Message envoyé sur channel\"}\n")
 							  .build();
-			} else if (message.trim().startsWith("(")) {
-				targetUrl = "http://127.0.0.1:8080/message/webapi/send";
-			} else {
-				return Response.status(400)
-							  .entity("{\"erreur\": \"Format de message invalide. Utilisez '[channel] (user) msg' ou '(to) (from) msg'\"}\n")
-							  .build();
 			}
 			
-			Client client = ClientBuilder.newClient();
-			Response response = client.target(targetUrl)
-									  .request(MediaType.APPLICATION_JSON)
-									  .post(Entity.json(jsonData));
-			
-			String result = response.readEntity(String.class);
-			int status = response.getStatus();
-			response.close();
-			client.close();
-			
-			return Response.status(status).entity(result).build();
+			// Format non reconnu
+			return Response.status(400)
+						  .entity("{\"erreur\": \"Format de message invalide. Utilisez 'destinataire' pour message direct ou '[channel]' pour channel\"}\n")
+						  .build();
 		} 
 
         catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(500)
-						  .entity("{\"erreur\": \"Service message indisponible: " + e.getMessage() + "\"}\n")
+						  .entity("{\"erreur\": \"Erreur lors de l'envoi: " + e.getMessage() + "\"}\n")
 						  .build();
+		}
+	}
+	
+	/**
+	 * Récupérer le nickname depuis le token en appelant interface-retour
+	 */
+	private String getNicknameFromToken(String token) {
+		try {
+			Client client = ClientBuilder.newClient();
+			Response response = client.target(INTERFACE_RETOUR_SERVICE + "/authentification/validate")
+									  .request(MediaType.TEXT_PLAIN)
+									  .post(Entity.text(token));
+			
+			if (response.getStatus() == 200) {
+				String nickname = response.readEntity(String.class);
+				response.close();
+				client.close();
+				return nickname;
+			}
+			response.close();
+			client.close();
+			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 	
