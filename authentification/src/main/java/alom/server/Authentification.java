@@ -56,8 +56,9 @@ public class Authentification {
             } catch (Exception e) {
                 System.out.println("Interface retour indisponible: " + e.getMessage()+"\n");
             }
-            return "token du client à la connexion " + token + "\n"; 
-        } catch (Exception e) {
+            return "Votre token est " + token + "\n"; 
+        } 
+        catch (Exception e) {
             return "Error during connexion\n";
         }
     }
@@ -80,7 +81,7 @@ public class Authentification {
             coupleLoginPassword.put(login, password);
             String token = generateToken();
             coupleLoginToken.put(login, token);
-            return "token du client à l'inscription " + token + "\n"; 
+            return "Votre token est " + token + "\n"; 
         }
     };
 

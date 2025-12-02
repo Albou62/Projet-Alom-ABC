@@ -22,9 +22,7 @@ public class Authentification {
                     .entity("token et nickname sont requis").build();
         }
         App.inscriptionToken(token, nickname);
-        
-        App.startKafkaConsumerForUser(nickname);
-        
+                
         return Response.ok("Accept connexion").build();
     }
     

@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import alom.KafkaConsumerIndividual;
-
 
 public class App
 {
@@ -21,7 +19,7 @@ public class App
 	
 	private static Map<String, ConcurrentHashMap<String, Boolean>> channelSubscriptions = new ConcurrentHashMap<>();
 	
-	private static Map<String, KafkaConsumerIndividual> kafkaConsumers = new ConcurrentHashMap<>();
+	private static KafkaConsumerClass kafkaConsumer;
 	
     public static void main( String[] args )
     {
@@ -85,10 +83,10 @@ public class App
 			if (clientSocket != null && !clientSocket.isClosed()) {
 				try {
 					clientSocket.getOutputStream().write((message + "\n").getBytes());
-					//System.out.println("[App] Envoi du message: " + message);
 					clientSocket.getOutputStream().flush();
 					System.out.println("[App] Message envoyé à " + nickname);
-				} catch (Exception e) {
+				} 
+				catch (Exception e) {
 					System.err.println("[App] Erreur envoi à " + nickname + ": " + e.getMessage());
 				}
 			}
@@ -106,34 +104,33 @@ public class App
 	}
 	
 	
-	public static void startKafkaConsumerForUser(String nickname) {
-		Socket clientSocket = connexions.get(nickname);
-		
-		if (clientSocket == null) {
-			System.err.println("[App] Pas de connexion socket pour " + nickname);
-			return;
+	public static Socket getClientSocket(String nickname) {
+		return connexions.get(nickname);
+	}
+	
+	public static void startKafkaConsumer() {
+		if (kafkaConsumer == null) {
+			kafkaConsumer = new KafkaConsumerClass();
+			Thread consumerThread = new Thread(kafkaConsumer);
+			consumerThread.setDaemon(true);
+			consumerThread.start();
+			System.out.println("[App] Consumer Kafka démarré");
 		}
-		
-		KafkaConsumerIndividual oldConsumer = kafkaConsumers.get(nickname);
-		if (oldConsumer != null) {
-			oldConsumer.stop();
+	}
+	
+	
+	public static void subscribeConsumerToUser(String nickname) {
+		if (kafkaConsumer != null) {
+			kafkaConsumer.subscribeToUserTopic(nickname);
+			System.out.println("[App] Consumer abonné au topic user-" + nickname);
 		}
-		
-		KafkaConsumerIndividual consumer = new KafkaConsumerIndividual(nickname, clientSocket);
-		kafkaConsumers.put(nickname, consumer);
-		
-		Thread consumerThread = new Thread(consumer);
-		consumerThread.setDaemon(true);
-		consumerThread.start();
-		
-		System.out.println("[App] Kafka Consumer individuel démarré pour " + nickname);
 	}
     
     public static void finish() {
         running = false;
         
-        for (KafkaConsumerIndividual consumer : kafkaConsumers.values()) {
-            consumer.stop();
+        if (kafkaConsumer != null) {
+            kafkaConsumer.stop();
         }
     }
 }

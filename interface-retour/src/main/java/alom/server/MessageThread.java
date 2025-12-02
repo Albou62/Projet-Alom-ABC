@@ -54,7 +54,7 @@ public class MessageThread implements Runnable {
 				out.println("Bienvenue " + nickname + " !");
 				
 				App.registerClientSocket(nickname, client);
-				App.startKafkaConsumerForUser(nickname);
+				App.subscribeConsumerToUser(nickname);
 
 				while(running && !client.isClosed()) {
 					try {

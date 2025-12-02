@@ -27,16 +27,16 @@ public class Listener implements ServletContextListener {
         tcpServerThread.setDaemon(true); // ne bloque pas l'arrêt de Tomcat
         tcpServerThread.start();
 
-        // Démarre le thread pour les consumers Kafka
+        // Démarre le consumer Kafka 
         kafkaConsumersThread = new Thread(() -> {
             try {
-                KafkaConsumerClass.consume();
+                App.startKafkaConsumer();
             } 
             catch (Throwable t) {
-                System.err.println("[Listener] Erreur au lancement des consumers Kafka: " + t.getMessage());
+                System.err.println("[Listener] Erreur au lancement du consumer Kafka: " + t.getMessage());
                 t.printStackTrace();
             }
-        }, "kafka-consumers");
+        }, "kafka-unified-consumer");
         kafkaConsumersThread.setDaemon(true);
         kafkaConsumersThread.start();
     }
