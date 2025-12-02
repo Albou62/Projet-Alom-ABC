@@ -43,10 +43,11 @@ public class KafkaConsumerClass {
                 records.forEach(record -> {
                     String channelName = record.key();
                     String message = record.value();
+                    String formattedMessage = "[" + channelName + "] " + message;
                     System.out.println("Message reçu - Channel: " + channelName + ", Message: " + message);
                     
                     try {
-                        App.sendMessageToChannel(channelName, message);
+                        App.sendMessageToChannel(channelName, formattedMessage);
                     } catch (Exception e) {
                         System.err.println("Erreur lors de l'envoi du message au channel: " + e.getMessage());
                     }
