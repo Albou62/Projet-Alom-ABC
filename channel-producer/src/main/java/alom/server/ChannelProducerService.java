@@ -8,7 +8,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 
-@Path("/webapi")
+@Path("/")
 public class ChannelProducerService {
     
     @POST
