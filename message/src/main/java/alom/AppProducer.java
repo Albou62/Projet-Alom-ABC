@@ -12,10 +12,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-/**
- * Producer Kafka simple qui envoie un message "message" sur le topic "topic"
- *
- */
+
 public class AppProducer
 {
     public static void main( String[] args ) throws Exception, ExecutionException
